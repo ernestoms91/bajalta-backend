@@ -4,9 +4,9 @@ Sistema de gestión de altas y bajas del personal con autenticación JWT.
 
 ## 🚀 Instalación y Configuración
 
-### 1️⃣ Clonar el repositorio
+1️⃣ Clonar el repositorio
 
-```bash
+bash
 git clone https://github.com/ernestoms91/bajalta-backend.git
 cd bajalta
 
