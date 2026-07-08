@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+venv/
+env/
+
+# Base de datos
+*.db
+*.sqlite
+*.sqlite3
+sonara.db
+bajalta.db
+
+# Logs
+logs/
+*.log
+
+# Archivos de audio
+audio/
+files/
+ia-models/
+*.mp3
+*.wav
+*.json
+
+# Variables de entorno
+.env
+.env.local
+
+# Alembic
+migrations/__pycache__/
+migrations/versions/__pycache__/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
