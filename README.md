@@ -6,30 +6,34 @@ Sistema de gestión de altas y bajas del personal con autenticación JWT.
 
 1️⃣ Clonar el repositorio
 
-bash
+```bash
 git clone https://github.com/ernestoms91/bajalta-backend.git
 cd bajalta
-
+```
 
 2️⃣ Crear y activar entorno virtual
-bash
+```bash
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
-# o
 venv\Scripts\activate     # Windows
+```
 
 3️⃣ Instalar dependencias
-bash
+```bash
 pip install -r requirements.txt
-
+```
 
 4️⃣ Configurar variables de entorno
 Renombrar el archivo .env.example a .env en la raíz del proyecto y llenar los campos.
 
-bash
+```bash
 cp .env.example .env
+```
 
 
 5️⃣ Crear usuario administrador
-bash
+
+**Importante:** Asegúrate de tener el entorno virtual activado.
+```bash
 python scripts/create_admin.py
+```
