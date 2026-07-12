@@ -35,6 +35,39 @@ class UsuarioRepository:
         ).first()
     
     # ============================================
+    # GET BY ROLE
+    # ============================================
+    def get_admin_emails(self) -> List[str]:
+        """
+        Obtiene los emails de todos los administradores activos.
+        
+        Returns:
+            Lista de emails de administradores activos
+        """
+        admins = self.db.exec(
+            select(User).where(
+                User.is_admin == True,
+                User.is_active == True
+            )
+        ).all()
+        
+        return [admin.email for admin in admins]
+    
+    def get_active_admin_users(self) -> List[User]:
+        """
+        Obtiene todos los administradores activos (objetos User).
+        
+        Returns:
+            Lista de objetos User con is_admin=True y is_active=True
+        """
+        return self.db.exec(
+            select(User).where(
+                User.is_admin == True,
+                User.is_active == True
+            )
+        ).all()
+    
+    # ============================================
     # LIST USERS (CON PAGINACIÓN Y FILTROS)
     # ============================================
     def get_all(
@@ -42,7 +75,7 @@ class UsuarioRepository:
         skip: int = 0, 
         limit: int = 100,
         active_only: bool = False,
-        is_admin: Optional[bool] = None  # ← Cambio: is_admin en lugar de rol
+        is_admin: Optional[bool] = None
     ) -> Tuple[List[User], int]:
         """
         Obtiene lista paginada de usuarios.
@@ -56,20 +89,15 @@ class UsuarioRepository:
         Returns:
             Tuple con (lista de usuarios, total)
         """
-        # Construir query base
         query = select(User)
         
-        # Aplicar filtros
         if active_only:
             query = query.where(User.is_active == True)
         
-        if is_admin is not None:  # ← Cambio: filtrar por is_admin
+        if is_admin is not None:
             query = query.where(User.is_admin == is_admin)
         
-        # Contar total
         total = self.db.exec(select(func.count()).select_from(query.subquery())).one()
-        
-        # Aplicar paginación
         users = self.db.exec(
             query.offset(skip).limit(limit).order_by(User.id)
         ).all()
@@ -95,20 +123,14 @@ class UsuarioRepository:
         """Crea un nuevo usuario."""
         user = User(**user_data)
         self.db.add(user)
-        self.db.flush()  # Obtiene el ID sin commit
+        self.db.flush()
         return user
     
     # ============================================
     # UPDATE
     # ============================================
     def update(self, user: User, update_data: dict) -> User:
-        """
-        Actualiza un usuario existente.
-        
-        Args:
-            user: Objeto User a actualizar
-            update_data: Diccionario con los campos a actualizar
-        """
+        """Actualiza un usuario existente."""
         for key, value in update_data.items():
             if hasattr(user, key) and value is not None:
                 setattr(user, key, value)
@@ -140,7 +162,7 @@ class UsuarioRepository:
         """Actualiza la fecha de último acceso."""
         user = self.get_by_id(user_id)
         if user:
-            user.updated_at = datetime.now(timezone.utc)  # ← Cambio: updated_at en lugar de ultimo_acceso
+            user.updated_at = datetime.now(timezone.utc)
             self.db.add(user)
             self.db.flush()
             self.db.refresh(user)
@@ -175,12 +197,7 @@ class UsuarioRepository:
     # DELETE (OPCIONAL - USAR CON CUIDADO)
     # ============================================
     def delete(self, user_id: int) -> bool:
-        """
-        Elimina un usuario (hard delete).
-        
-        Nota: Recomiendo usar disable() en lugar de delete()
-        para mantener el historial.
-        """
+        """Elimina un usuario (hard delete)."""
         user = self.get_by_id(user_id)
         if user:
             self.db.delete(user)

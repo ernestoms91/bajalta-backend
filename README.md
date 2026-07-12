@@ -24,6 +24,7 @@ pip install -r requirements.txt
 ```
 
 4️⃣ Configurar variables de entorno
+
 Renombrar el archivo .env.example a .env en la raíz del proyecto y llenar los campos.
 
 ```bash
@@ -35,5 +36,5 @@ cp .env.example .env
 
 **Importante:** Asegúrate de tener el entorno virtual activado.
 ```bash
-python scripts/create_admin.py
+python create_admin.py
 ```

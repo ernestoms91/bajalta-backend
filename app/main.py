@@ -9,6 +9,7 @@ from app.core.database import init_db
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import setup_logging, get_logger
 from app.features.auth.endpoints import auth_router, user_router
+from app.features.empleados.endpoints import empleados_router
 
 # ==========================================
 # CONFIGURAR LOGGING AL INICIO
@@ -80,6 +81,7 @@ register_exception_handlers(app)
 # ==========================================
 app.include_router(auth_router)
 app.include_router(user_router)
+app.include_router(empleados_router)
 # app.include_router(empleados_router, prefix="/api/v1/empleados", tags=["Empleados"])
 # app.include_router(solicitudes_router, prefix="/api/v1/solicitudes", tags=["Solicitudes"])
 # app.include_router(usuarios_router, prefix="/api/v1/usuarios", tags=["Usuarios"])
