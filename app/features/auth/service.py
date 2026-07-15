@@ -7,7 +7,8 @@ from app.core.dependencies import DBSession
 from app.core.security import (
     create_access_token,
     create_refresh_token,
-    refresh_access_token as refresh_access_token_util,
+    validate_refresh_token,
+    decode_token,
     verify_password,
     hash_password
 )
@@ -68,7 +69,8 @@ class AuthService:
         refresh_token = create_refresh_token(
             user_id=user.id,
             username=user.username,
-            password_version=user.password_version
+            password_version=user.password_version,
+            is_admin=user.is_admin
         )
         
         logger.info(f"Login exitoso: {user.username}")
@@ -83,17 +85,55 @@ class AuthService:
     
     def refresh_token(self, refresh_token: str) -> Token:
         """Valida refresh_token y genera un nuevo access_token."""
-        new_access_token = refresh_access_token_util(refresh_token)
-        
-        if not new_access_token:
+        payload = decode_token(refresh_token)
+        if not payload or payload.get("type") != "refresh":
             logger.warning("Intento de refresh con token inválido")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Refresh token inválido o expirado"
             )
-        
+
+        user_id = payload.get("sub")
+        if not user_id:
+            logger.warning("Refresh token sin user_id")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Refresh token inválido"
+            )
+
+        user = self.repo.get_by_id(int(user_id))
+        if not user:
+            logger.warning(f"Refresh token para usuario no existente: {user_id}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Refresh token inválido"
+            )
+
+        if not user.is_active:
+            logger.warning(f"Refresh token usado por usuario inactivo: {user.username}")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Usuario inactivo"
+            )
+
+        if not validate_refresh_token(refresh_token, user.password_version):
+            logger.warning(
+                f"Refresh token inválido por versión de contraseña o tipo: {user.username}"
+            )
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Refresh token inválido o expirado"
+            )
+
+        access_token = create_access_token(
+            user_id=user.id,
+            username=user.username,
+            password_version=user.password_version,
+            is_admin=user.is_admin
+        )
+
         return Token(
-            access_token=new_access_token,
+            access_token=access_token,
             refresh_token=refresh_token,
             token_type="bearer",
             expires_in=settings.JWT_EXPIRES_MIN * 60

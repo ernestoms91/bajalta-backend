@@ -34,7 +34,7 @@ security = HTTPBearer(auto_error=False)
 Credentials = Annotated[Optional[HTTPAuthorizationCredentials], Depends(security)]
 
 
-async def get_current_user(
+def get_current_user(
     credentials: Credentials,
     session: DBSession,
 ) -> Optional[User]:
@@ -67,7 +67,7 @@ async def get_current_user(
     return user
 
 
-async def get_current_active_user(
+def get_current_active_user(
     current_user: Annotated[Optional[User], Depends(get_current_user)]
 ) -> User:
     """
@@ -90,7 +90,7 @@ async def get_current_active_user(
     return current_user
 
 
-async def get_current_admin_user(
+def get_current_admin_user(
     current_user: Annotated[User, Depends(get_current_active_user)]
 ) -> User:
     """

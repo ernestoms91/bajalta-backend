@@ -5,6 +5,9 @@ import jwt
 from jwt.exceptions import InvalidTokenError, ExpiredSignatureError
 import bcrypt
 from app.core.config import settings
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 # ============================================
 # JWT - ACCESS TOKEN
@@ -38,7 +41,11 @@ def decode_token(token: str) -> Optional[Dict[str, Any]]:
     try:
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALG])
         return payload
+    except ExpiredSignatureError:
+        logger.warning("Token expirado")
+        return None
     except InvalidTokenError:
+        logger.warning("Token JWT inválido")
         return None
 
 
@@ -51,6 +58,7 @@ def validate_token_and_password_version(token: str, current_password_version: in
         return False
     
     if payload.get("type") != "access":
+        logger.warning("Token JWT no es de tipo access")
         return False
     
     return payload.get("password_version") == current_password_version
@@ -59,7 +67,7 @@ def validate_token_and_password_version(token: str, current_password_version: in
 # ============================================
 # JWT - REFRESH TOKEN
 # ============================================
-def create_refresh_token(user_id: int, username: str, password_version: int) -> str:
+def create_refresh_token(user_id: int, username: str, password_version: int, is_admin: bool = False) -> str:
     """
     Crea un refresh token con expiración larga.
     """
@@ -67,6 +75,7 @@ def create_refresh_token(user_id: int, username: str, password_version: int) -> 
         "sub": str(user_id),
         "username": username,
         "password_version": password_version,
+        "is_admin": is_admin,
         "exp": datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
         "iat": datetime.now(timezone.utc),
         "type": "refresh"

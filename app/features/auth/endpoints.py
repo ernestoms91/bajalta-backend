@@ -107,8 +107,8 @@ def list_users(
 def update_user(
     current_admin: CurrentAdmin,
     user_service: UserServiceDep,
-    user_id: int = Path(..., ge=1),
-    request: UserUpdate = None
+    request: UserUpdate,
+    user_id: int = Path(..., ge=1)
 ) -> CommonResponse[UserResponse]:
     """Actualizar usuario (solo admin)."""
     updated_user = user_service.update_user(current_admin, user_id, request)
