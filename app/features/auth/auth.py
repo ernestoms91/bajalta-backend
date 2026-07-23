@@ -1,9 +1,7 @@
 # app/features/auth/auth.py
 from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
-from app.core.dependencies import DBSession
-from app.features.auth.dependencies import CurrentUser
-from app.features.auth.service import AuthService
+from app.features.auth.dependencies import CurrentUser, AuthServiceDep
 from app.features.auth.schemas import (
     LoginResponse,
     Token,
@@ -23,7 +21,7 @@ router = APIRouter(prefix="/auth", tags=["Autenticación"])
     summary="Iniciar sesión"
 )
 def login(
-    session: DBSession,
+    auth_service: AuthServiceDep,
     form_data: OAuth2PasswordRequestForm = Depends()
 ) -> CommonResponse[LoginResponse]:
     """
@@ -32,8 +30,7 @@ def login(
     - **username**: Email del usuario
     - **password**: Contraseña
     """
-    service = AuthService(session)
-    result = service.login(form_data.username, form_data.password)
+    result = auth_service.login(form_data.username, form_data.password)
     return CommonResponse.success(
         message="Login exitoso",
         data=result
@@ -47,14 +44,13 @@ def login(
     summary="Refrescar token de acceso"
 )
 def refresh_access_token(
-    session: DBSession,
+    auth_service: AuthServiceDep,
     request: RefreshTokenRequest
 ) -> CommonResponse[Token]:
     """
     Genera un nuevo access_token usando un refresh_token válido.
     """
-    service = AuthService(session)
-    result = service.refresh_token(request.refresh_token)
+    result = auth_service.refresh_token(request.refresh_token)
     return CommonResponse.success(
         message="Token refrescado exitosamente",
         data=result
@@ -69,7 +65,7 @@ def refresh_access_token(
 )
 def change_password(
     current_user: CurrentUser,
-    session: DBSession,
+    auth_service: AuthServiceDep,
     request: UserChangePassword
 ) -> CommonResponse:
     """
@@ -78,8 +74,7 @@ def change_password(
     - **current_password**: Contraseña actual
     - **new_password**: Nueva contraseña
     """
-    service = AuthService(session)
-    service.change_password(
+    auth_service.change_password(
         current_user,
         request.current_password,
         request.new_password

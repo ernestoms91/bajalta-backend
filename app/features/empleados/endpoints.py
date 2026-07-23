@@ -13,7 +13,6 @@ from app.features.empleados.schemas import (
     EmpleadoListResponse,
     EmpleadoBajaRequest,
     EmpleadoRecontratar,
-    EmpleadoStatsResponse
 )
 from app.features.shared.schemas import CommonResponse
 
@@ -32,7 +31,6 @@ empleados_router = APIRouter(prefix="/empleados", tags=["Empleados"])
     summary="Crear nuevo empleado"
 )
 def create_empleado(
-    session: DBSession,
     current_user: CurrentUser,
     service: EmpleadoServiceDep,
     data: EmpleadoCreate
